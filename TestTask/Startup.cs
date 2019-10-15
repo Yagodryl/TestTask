@@ -69,7 +69,7 @@ namespace TestTask
 
 
             //Seeder for my database
-            SeederDB.SeedData(app.ApplicationServices, env, this.Configuration);
+           // SeederDB.SeedData(app.ApplicationServices, env, this.Configuration);
         }
     }
 }
