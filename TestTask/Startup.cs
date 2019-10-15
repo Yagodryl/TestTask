@@ -66,6 +66,11 @@ namespace TestTask
                     spa.UseReactDevelopmentServer(npmScript: "start");
                 }
             });
+
+
+            //Seeder for my database
+            SeederDB.SeedData(app.ApplicationServices, env, this.Configuration);
         }
     }
 }
+    
