@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import {Card, CardBody, FormGroup, Label,
      InputGroup, Input, FormFeedback, Row, Button} from "reactstrap";
+import Axios from 'axios';
 class AddItem extends Component {
     state = { 
         productName: "",
@@ -30,7 +31,10 @@ class AddItem extends Component {
         
         const isValid = Object.keys(errors).length === 0;
         if(isValid){
-            console.log("Ok");
+           Axios.post("api/item/product/Add", {productName, categoryName})
+           .then(()=>{
+               this.setState({productName: "",categoryName: "" })
+           })
         }else{
             this.setState({errors});
         }
@@ -44,7 +48,7 @@ class AddItem extends Component {
         return (
           <React.Fragment>
             <Card>
-              <CardBody>
+              <CardBody style={{backgroundColor: "lightgrey"}}>
                 <form autoComplete="off" onSubmit={this.onSubmitForm}>
                   <Row>
                   <FormGroup className="col-12 col-md-5">

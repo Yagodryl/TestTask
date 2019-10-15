@@ -4,10 +4,10 @@ import { Pagination, PaginationItem, PaginationLink } from 'reactstrap';
 class ItemPagination extends Component {
 
   onPageChanged(e){
-    this.props.onClickPage(e);
+    this.props.callBackParams(e);
   }
     render() {
-        const {currentPage, countOfPages, pageLink} = this.props;
+        const {currentPage, countOfPages} = this.props;
         let pages=[];
         let point=7;
         let firstPoint=4;
@@ -43,7 +43,7 @@ class ItemPagination extends Component {
           <div>
             <Pagination>
               <PaginationItem disabled={currentPage===1}>
-                <PaginationLink previous   href={pageLink+Number.parseInt(currentPage-1)} />
+                <PaginationLink previous onClick={()=>this.onPageChanged(currentPage-1)}  tag="button" />
               </PaginationItem>
               {pages.map(p => {
                 return p === -1 ? (
@@ -52,7 +52,7 @@ class ItemPagination extends Component {
                   </PaginationItem>
                 ) : (
                   <PaginationItem active={p === currentPage} key={p}>
-                    <PaginationLink href={pageLink+p} >
+                    <PaginationLink tag="button" onClick={()=>this.onPageChanged(p)}>
                       {p}
                     </PaginationLink>
                   </PaginationItem>
@@ -60,7 +60,7 @@ class ItemPagination extends Component {
               })}
   
               <PaginationItem disabled={currentPage===countOfPages}>
-                <PaginationLink next href={pageLink+Number.parseInt(currentPage+1)} />
+                <PaginationLink next onClick={()=>this.onPageChanged(currentPage+1)}  tag="button" />
               </PaginationItem>
             </Pagination>
           </div>

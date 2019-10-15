@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TestTask.DAL;
+using TestTask.DAL.Entities;
 using TestTask.Models;
 
 namespace TestTask.Controllers
@@ -24,33 +25,87 @@ namespace TestTask.Controllers
         [HttpGet("products/{page}")]
         public IActionResult GetProducts(int page)
         {
-            int itemsShow = 4;
-            var listProducts = _context.Products.AsQueryable();
-
-            int countOfItems = listProducts.Count();
-
-            listProducts = listProducts.Include(x => x.Category)
-                 .Skip((page - 1) * itemsShow)
-                 .Take(itemsShow);
-            var products = new List<ProductItemModel>();
-            foreach (var item in listProducts)
+            try
             {
-                products.Add(new ProductItemModel
+                int itemsShow = 4;
+                var listProducts = _context.Products.AsQueryable();
+
+                int countOfItems = listProducts.Count();
+
+                listProducts = listProducts.Include(x => x.Category)
+                     .Skip((page - 1) * itemsShow)
+                     .Take(itemsShow);
+                var products = new List<ProductItemModel>();
+                foreach (var item in listProducts)
                 {
-                    CategoryName = item.Category.Name,
-                    ProductName = item.Name,
-                    ProductID = item.Id
-                });
+                    products.Add(new ProductItemModel
+                    {
+                        CategoryName = item.Category.Name,
+                        ProductName = item.Name,
+                        ProductID = item.Id
+                    });
+                }
+
+                var model = new GetProductModel
+                {
+                    CurrentPage = page,
+                    CountOfPages = (int)Math.Ceiling((double)countOfItems / itemsShow),
+                    Products = products
+                };
+
+                return Ok(model);
             }
-
-            var model = new GetProductModel
+            catch
             {
-                CurrentPage = page,
-                CountOfPages = (int)Math.Ceiling((double)countOfItems/itemsShow),
-                Products = products
-            };
+                return BadRequest("Failed to retrieve data!!!");
+            }
+        }
 
-            return Ok(model);
+        [HttpPost("product/Add")]
+        public IActionResult AddProduct([FromBody]AddProductModel model)
+        {
+            try
+            {
+                var category = _context.Categories.SingleOrDefault(x => x.Name == model.CategoryName);
+                if (category != null)
+                {
+                    _context.Products.Add(new Product
+                    {
+                        Name = model.ProductName,
+                        CategoryID = category.Id
+                    });
+                }
+                else
+                {
+                    category = new Category
+                    {
+                        Name = model.CategoryName
+                    };
+                    _context.Categories.Add(category);
+                    _context.SaveChanges();
+
+                    _context.Products.Add(new Product
+                    {
+                        Name = model.ProductName,
+                        CategoryID = category.Id
+                    });
+                }
+                _context.SaveChanges();
+
+                return Ok();
+            }
+            catch
+            {
+                return BadRequest("Cannot add item!!!");
+            }
+        }
+
+        [HttpGet("product/delete/{productId}")]
+        public IActionResult DeleteProduct(int productId)
+        {
+            _context.Products.Remove(new Product { Id = productId});
+            _context.SaveChanges();
+            return Ok();
         }
     }
 }

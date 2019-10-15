@@ -13,7 +13,7 @@ class ItemsTable extends Component {
             <Button color="info" className="mr-2">
               Edit
             </Button>
-            <Button color="danger">Del</Button>
+            <Button color="danger" onClick={()=>this.props.deleteItem(item.productID)}>Del</Button>
           </td>
         </tr>
       );
