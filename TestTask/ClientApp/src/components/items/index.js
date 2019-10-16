@@ -24,12 +24,14 @@ class ItemsPage extends Component {
     this.getData(pageNumber);
   };
   deleteItem = itemId => {
-    const {currentPage} = this.state.itemsData;
-  
-    Axios.get("api/item/product/delete/" + itemId).then(() => {
+    const { currentPage } = this.state.itemsData;
+
+    Axios.delete("api/item/product/delete/" + itemId).then(() => {
       this.getData(currentPage);
-      
-    });
+    }).catch((error=>{
+      alert(error.response.data)
+    }));
+    
   };
 
   render() {
@@ -41,7 +43,8 @@ class ItemsPage extends Component {
       <div>
         <h1 style={{ textAlign: "center" }}>Items</h1>
         <AddItem></AddItem>
-        {!Object.keys(this.state.itemsData).length ? "Loading" : <ItemsTable deleteItem={this.deleteItem} products={products}></ItemsTable>}
+        {!Object.keys(this.state.itemsData).length ? "Loading" :
+         <ItemsTable deleteItem={this.deleteItem} products={products}/>}
         <div className="d-flex justify-content-center">
           <ItemPagination callBackParams={this.onClickPage} currentPage={currentPage} countOfPages={countOfPages}></ItemPagination>
         </div>

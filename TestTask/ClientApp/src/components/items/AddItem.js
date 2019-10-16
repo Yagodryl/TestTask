@@ -4,6 +4,7 @@ import {Card, CardBody, FormGroup, Label,
 import Axios from 'axios';
 class AddItem extends Component {
     state = { 
+  
         productName: "",
         categoryName: "",
         errors: {} 
@@ -23,6 +24,13 @@ class AddItem extends Component {
           });
         }
       };
+      // componentWillReceiveProps(){
+      //   this.setState({
+      //     productId: this.props.productId,
+      //     productName: this.props.productName,
+      //     categoryName: this.props.categoryName
+      //   });
+      // }
      onSubmitForm = e => {
         e.preventDefault();
         const { productName,categoryName,errors} = this.state;

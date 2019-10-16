@@ -20,12 +20,26 @@ namespace TestTask.Models
         public string ProductName { get; set; }
         public string CategoryName { get; set; }
     }
-
+   
     public class GetProductModel
     {
         public int CurrentPage { get; set; }
         public int CountOfPages { get; set; }
         public ICollection<ProductItemModel> Products { get; set; }
+    }
+
+    public class GetStatisticModel
+    {
+        public int CurrentPage { get; set; }
+        public int CountOfPages { get; set; }
+        public ICollection<StatisticItemModel> StatisticItems { get; set; }
+    }
+
+    public class StatisticItemModel
+    {
+        public int CategoryID { get; set; }
+        public string CategoryName { get; set; }
+        public int Count { get; set; }
     }
 
 }

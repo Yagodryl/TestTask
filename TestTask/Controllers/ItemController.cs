@@ -57,7 +57,7 @@ namespace TestTask.Controllers
             }
             catch
             {
-                return BadRequest("Failed to retrieve data!!!");
+                return BadRequest("Failed to get data!!!");
             }
         }
 
@@ -100,12 +100,36 @@ namespace TestTask.Controllers
             }
         }
 
-        [HttpGet("product/delete/{productId}")]
+        [HttpDelete("product/delete/{productId}")]
         public IActionResult DeleteProduct(int productId)
         {
             _context.Products.Remove(new Product { Id = productId});
             _context.SaveChanges();
             return Ok();
         }
+        [HttpPut("product/edit")]
+        public IActionResult EditProduct([FromBody]ProductItemModel product)
+        {
+            var productItem = _context.Products.Single(x => x.Id == product.ProductID);
+            var category = _context.Categories.SingleOrDefault(x=>x.Name==product.CategoryName);
+            if (category != null)
+            {
+                productItem.Name = product.ProductName;
+                productItem.CategoryID = category.Id;
+            }
+            else
+            {
+                category = new Category { Name = product.CategoryName };
+                _context.Categories.Add(category);
+                _context.SaveChanges();
+                productItem.Name = product.ProductName;
+                productItem.CategoryID = category.Id;
+
+            }
+            _context.SaveChanges();
+
+            return Ok();
+        }
+
     }
 }
