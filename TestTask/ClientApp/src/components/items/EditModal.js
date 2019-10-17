@@ -1,20 +1,25 @@
 import React, { Component } from "react";
 import { Label, Button, Modal, ModalBody, ModalHeader, ModalFooter, FormGroup, FormFeedback, Input } from "reactstrap";
-import Axios from 'axios';
+import * as EditItemActions from "./reducer";
+import get from "lodash.get";
+import { connect } from "react-redux";
+
 class EditModal extends Component {
   state = {
     productName: "",
     categoryName: "",
+    currentPage: 0,
     errors: {}
   };
-  componentWillReceiveProps() {
-    this.setState({
+  
+  componentDidMount = () => {
+this.setState({
      
       productName: this.props.data.productName,
       categoryName: this.props.data.categoryName,
-    
+     
     });
-    console.log("this.props.data",this.props.data)
+
   }
   setStateByErrors = (name, value) => {
     if (!!this.state.errors[name]) {
@@ -32,17 +37,14 @@ class EditModal extends Component {
   };
   onSubmitForm = e => {
     e.preventDefault();
+    const {currentPage} = this.props;
     const { productName, categoryName, errors } = this.state;
     if (productName === "") errors.productName = "Item name can't be empty!";
     if (categoryName === "") errors.categoryName = "Category name can't be empty!";
     let productID = this.props.data.productID;
     const isValid = Object.keys(errors).length === 0;
     if (isValid) {
-       
-      Axios.put("api/item/product/edit", { productName, categoryName,productID }).then(() => {
-        this.setState({ productName: "", categoryName: "", isOpen: false });
-      });
-      
+       this.props.editItem({ productName, categoryName,productID }, currentPage);
     } else {
       this.setState({ errors });
     }
@@ -52,10 +54,10 @@ class EditModal extends Component {
     this.setStateByErrors(e.target.name, e.target.value);
   };
   render() {
-    console.log("SateInModal:", this.state);
+    console.log("SateInModal:", this.props);
     const { errors } = this.state;
     return (
-      <Modal isOpen={this.props.isOpen} className={this.props.className}>
+      <Modal isOpen={true} className={this.props.className}>
         <ModalHeader>{this.props.title}</ModalHeader>
         <form autoComplete="off" onSubmit={this.onSubmitForm}>
           <ModalBody>
@@ -94,8 +96,8 @@ class EditModal extends Component {
             </Button>{" "}
             <Button
               color="secondary"
-              onClick={e => {
-                e.preventDefault(), this.props.onClickResp();
+              onClick={() => {
+                 this.props.onClickResp();
               }}
             >
               Cancel
@@ -106,5 +108,22 @@ class EditModal extends Component {
     );
   }
 }
+const mapStateToProps = state => {
+  return{
+    isLoading: get(state, "items.listItems.loading"),
+    isFailed: get(state, "items.listItems.failed"),
+    error: get(state, "items.listItems.error"),
 
-export default EditModal;
+  }
+}
+const mapDispatchToProps = dispatch => {
+  return {
+    editItem: (model, page) =>{
+      dispatch(EditItemActions.editItem(model, page));
+    }
+  }
+
+}
+
+
+export default connect(mapStateToProps, mapDispatchToProps)(EditModal);

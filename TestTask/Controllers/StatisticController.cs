@@ -24,32 +24,39 @@ namespace TestTask.Controllers
         [HttpGet("get/{page}")]
         public IActionResult GetStatistic(int page)
         {
-            int itemsShow = 3;
-            var statistic = _context.Categories.AsQueryable();
-            int countOfItems = statistic.Count();
-              statistic = statistic.Include(x=>x.Products)
-                .Skip((page - 1) * itemsShow)
-                .Take(itemsShow);
-            var statisticList = new List<StatisticItemModel>();
-            foreach(var item in statistic)
+            try
             {
-                statisticList.Add(new StatisticItemModel
+                int itemsShow = 3;
+                var statistic = _context.Categories.AsQueryable();
+                int countOfItems = statistic.Count();
+                statistic = statistic.Include(x => x.Products)
+                  //.OrderBy(x=>x.Name)
+                  .Skip((page - 1) * itemsShow)
+                  .Take(itemsShow);
+                var statisticList = new List<StatisticItemModel>();
+                foreach (var item in statistic)
                 {
-                    CategoryName = item.Name,
-                    Count = item.Products.Count,
-                    CategoryID = item.Id
-                });
+                    statisticList.Add(new StatisticItemModel
+                    {
+                        CategoryName = item.Name,
+                        Count = item.Products.Count,
+                        CategoryID = item.Id
+                    });
+                }
+                var model = new GetStatisticModel
+                {
+                    CountOfPages = (int)Math.Ceiling((double)countOfItems / itemsShow),
+                    CurrentPage = page,
+                    StatisticItems = statisticList,
+
+                };
+                return Ok(model);
             }
-            var model = new GetStatisticModel
+            catch
             {
-                CountOfPages = (int)Math.Ceiling((double)countOfItems / itemsShow),
-                CurrentPage = page,
-                StatisticItems = statisticList,
-       
-            };
+                return BadRequest("Failed to get statistic data");
 
-
-            return Ok(model);
+            }
         }
     }
 }

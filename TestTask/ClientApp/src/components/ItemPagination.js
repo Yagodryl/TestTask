@@ -12,6 +12,7 @@ class ItemPagination extends Component {
         let point=7;
         let firstPoint=4;
         let step=3;
+      
   
         for (let i = 1; i <= countOfPages; i++) {
           if (currentPage < point) {
@@ -24,8 +25,9 @@ class ItemPagination extends Component {
             else if (i === countOfPages - 1 || i === countOfPages) {
               pages.push(i);
             }
+           
           }
-          else if (currentPage >= point) {
+         else if (currentPage >= point) {
             if ((i < firstPoint || i>currentPage-step) && (i<currentPage+step)) {
               pages.push(i);
             }
@@ -33,8 +35,11 @@ class ItemPagination extends Component {
               pages.push(-1);
             }
             else if (i === countOfPages - 1 || i === countOfPages) {
+              
               pages.push(i);
             }
+           
+            
           }
         }
        // console.log("pagesCount: ", pagesCount);

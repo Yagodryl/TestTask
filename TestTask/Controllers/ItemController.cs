@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TestTask.DAL;
 using TestTask.DAL.Entities;
+using TestTask.Helpers;
 using TestTask.Models;
 
 namespace TestTask.Controllers
@@ -33,6 +34,7 @@ namespace TestTask.Controllers
                 int countOfItems = listProducts.Count();
 
                 listProducts = listProducts.Include(x => x.Category)
+                    //.OrderBy(x=>x.Name)
                      .Skip((page - 1) * itemsShow)
                      .Take(itemsShow);
                 var products = new List<ProductItemModel>();
@@ -61,21 +63,21 @@ namespace TestTask.Controllers
             }
         }
 
+      
+
+
         [HttpPost("product/Add")]
         public IActionResult AddProduct([FromBody]AddProductModel model)
         {
+            if (!ModelState.IsValid)
+            {
+                var errrors = CustomValidator.GetErrorsByModel(ModelState);
+                return BadRequest(errrors);
+            }
             try
             {
-                var category = _context.Categories.SingleOrDefault(x => x.Name == model.CategoryName);
-                if (category != null)
-                {
-                    _context.Products.Add(new Product
-                    {
-                        Name = model.ProductName,
-                        CategoryID = category.Id
-                    });
-                }
-                else
+                var category = _context.Categories.SingleOrDefault(c => c.Name == model.CategoryName);
+                if (category == null)
                 {
                     category = new Category
                     {
@@ -83,17 +85,22 @@ namespace TestTask.Controllers
                     };
                     _context.Categories.Add(category);
                     _context.SaveChanges();
-
-                    _context.Products.Add(new Product
-                    {
-                        Name = model.ProductName,
-                        CategoryID = category.Id
-                    });
                 }
+                var product = new Product
+                {
+                    CategoryID = category.Id,
+                    Name = model.ProductName
+                };
+                _context.Products.Add(product);
                 _context.SaveChanges();
-
-                return Ok();
-            }
+                var result = new ProductItemModel
+                {
+                    ProductID = product.Id,
+                    ProductName = product.Name,
+                    CategoryName = category.Name
+                };
+                return Ok(result);
+            }       
             catch
             {
                 return BadRequest("Cannot add item!!!");
@@ -103,32 +110,52 @@ namespace TestTask.Controllers
         [HttpDelete("product/delete/{productId}")]
         public IActionResult DeleteProduct(int productId)
         {
-            _context.Products.Remove(new Product { Id = productId});
-            _context.SaveChanges();
-            return Ok();
+            try
+            {
+                _context.Products.Remove(new Product { Id = productId });
+                _context.SaveChanges();
+                return Ok();
+            }
+            catch
+            {
+                return BadRequest("Failed to delete");
+            }
         }
         [HttpPut("product/edit")]
         public IActionResult EditProduct([FromBody]ProductItemModel product)
         {
-            var productItem = _context.Products.Single(x => x.Id == product.ProductID);
-            var category = _context.Categories.SingleOrDefault(x=>x.Name==product.CategoryName);
-            if (category != null)
+            if (!ModelState.IsValid)
             {
-                productItem.Name = product.ProductName;
-                productItem.CategoryID = category.Id;
+                var errrors = CustomValidator.GetErrorsByModel(ModelState);
+                return BadRequest(errrors);
             }
-            else
+            try
             {
-                category = new Category { Name = product.CategoryName };
-                _context.Categories.Add(category);
+                var productItem = _context.Products.Single(x => x.Id == product.ProductID);
+                var category = _context.Categories.SingleOrDefault(x => x.Name == product.CategoryName);
+                if (category != null)
+                {
+                    productItem.Name = product.ProductName;
+                    productItem.CategoryID = category.Id;
+                }
+                else
+                {
+                    category = new Category { Name = product.CategoryName };
+                    _context.Categories.Add(category);
+                    _context.SaveChanges();
+                    productItem.Name = product.ProductName;
+                    productItem.CategoryID = category.Id;
+
+                }
                 _context.SaveChanges();
-                productItem.Name = product.ProductName;
-                productItem.CategoryID = category.Id;
+
+                return Ok();
+            }
+            catch
+            {
+                return BadRequest("Cannot edit!!!");
 
             }
-            _context.SaveChanges();
-
-            return Ok();
         }
 
     }
